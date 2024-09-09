@@ -1,17 +1,20 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
-import chart from "./chart"
+import chart from "./chart";
 import emailSender from "./emailSender";
 import processData from "./processData";
-import {saveAllUsers,saveClickedUsers,saveNotClickedUser} from "./processXl";
-import getFileFromDrive,{getLastUsers} from "./getFilesFromOneDrive";
-
+import {
+  saveAllUsers,
+  saveClickedUsers,
+  saveNotClickedUser,
+} from "./processXl";
+import getFileFromDrive, { getLastUsers } from "./getFilesFromOneDrive";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
-app.use(express.json())
+app.use(express.json());
 
 interface Data {
   name: string;
@@ -21,11 +24,37 @@ interface Data {
   matrix: { [key: string]: string };
 }
 
-
+// const data = {
+//   "თქვენი სახელი": "guga",
+//   "თქვენი გვარი": "artsividze",
+//   "ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)":
+//     "artsividze.guga@gmail.com",
+//   "პროცესის საზღვრები":
+//     "\r\nთანამშრომელთა/სტრუქტურული ერთეულების საქმიანობები ხშირად გაურკვეველია და სიტუაციურად, სპონტანურად იცვლება.",
+//   "პროცესების აღწერილობები":
+//     "\r\n\r\nპროცესები ფრაგმენტულადაა დოკუმენტირებული და უმეტესწილად ასახავენ სტრუქტურული ერთეულების შიდა საქმიანობას.",
+//   "თამანშრომლების ფუნქციები და როლები":
+//     "\r\nთანამშრომელთა როლები და ფუნქციები მკაფიოდაა განსაზღვრული და ერთგვაროვნად აღიქმება კომპანიის მასშტაბით.",
+//   "მომხმარებელზე ორიენტირებული ბიზნეს პროცესები\r\n":
+//     "\r\n\r\nმომხმარებლების საჭიროებები ცნობილია და ერთმნიშვნელოვანია, თუ რა სურს/სჭირდება მომხმარებელს. პროცესების მოდელირება და დიზაინი ხორციელდება მომხმარებლის საჭიროებების მიხედვით.\r\n",
+//   "პროცესების ინდიკატორები\r\n":
+//     "კომპანიაში არ არსებობს შესრულების ინდიკატორები. შესრულების მონიტორინგი არ ხორციელდება.",
+//   "მმართველობის როლი":
+//     "\r\nპროცესის მმართველი აქტიურად წაახალისებს გუნდის წევრებს, რათა მათ გამოცადონ ახალი იდეები და წვლილი შეიტანონ პროცესების უწყვეტ გაუმჯობესებაში. პროცესის მმართველი უწყვეტი გაუმჯობესების კულტურის ერთ-ერთი მთავარი შემოქმედია.",
+//   "გადაწყვეტილებების მიღების პრაქტიკები\r\n":
+//     "\r\nგადაწყვეტილებები კომპანიაში მიიღება ინტუიტურად და სპონტანურად, უმეტესწილად კომპანიის დირექტორის მიერ.",
+//   "პროცესების გაუმჯობესების პრაქტიკები":
+//     "\r\nკომპანიაში არ არსებობს ორგანიზაციული განვითარების პრაქტიკა/გამოცდილება, ან, არსებობის შემთხვევაში ფრაგმენტული და არათანმიმდევრულია.\r\n",
+//   "ინფორმაციული ტექნოლოგიები":
+//     "კომპანიის IT სისტემები უზრუნველყოფს კროს-ფუნქციური პროცესების ეფექტიანად განხორციელებას.",
+//   "პროცესებზე დაფუძნებული ორგანიზაციული კულტურა":
+//     "\r\nკომპანიის მენეჯმენტს ნაკლებად აქვთ წარმოდგენა, თუ რას ნიშნავს ბიზნეს პროცესების მართვა.",
+//   id: 3,
+// };
 
 const data = {
-  "id": "2",
-  "submitTime": "9/2/2024 1:45:07 PM",
+  id: "2",
+  submitTime: "9/2/2024 1:45:07 PM",
   "თქვენი სახელი": "ზაზა",
   "თქვენი გვარი": "ნოზაძე",
   "კომპანიის დასახელება": "zazagroup",
@@ -58,53 +87,51 @@ interface JsonData {
   [key: string]: string | number;
 }
 
-
-app.get("/",async (req: Request, res: Response) => {
-
+app.get("/", async (req: Request, res: Response) => {
   const allUsers: JsonData[] = await getFileFromDrive(
     "ბიზნეს პროცესების განვითარების ფაზების დიაგნოსტიკის კითხვარი.xlsx"
   );
 
- const scores=await getFileFromDrive('schema.xlsx')
+  const scores = await getFileFromDrive("schema.xlsx");
 
+  const schemaScores = await getFileFromDrive("schemaScores.xlsx");
 
- const schemaScores=await getFileFromDrive('schemaScores.xlsx')
+  // saveAllUsers(data)
+  //  if(!req.body)return
+  //   const data:Data|undefined=await processData(req.body)
+  const mad = {
+    name: "ზაზა",
+    lastName: "ნოზაძე",
+    email: "2",
+    id: "2",
+    matrix: {
+      "პროცესის საზღვრები": "2",
+      "პროცესების აღწერილობები": "2",
+      "თამანშრომლების ფუნქციები და როლები": "5",
+      "მომხმარებელზე ორიენტირებული ბიზნეს პროცესები": "2",
+      "პროცესების ინდიკატორები": "3",
+      "მმართველობის როლი": "5",
+      "გადაწყვეტილებების მიღების პრაქტიკები": "2",
+      "პროცესების გაუმჯობესების პრაქტიკები": "4",
+      "ინფორმაციული ტექნოლოგიები": "4",
+    },
+  };
 
-// saveAllUsers(data)
-//  if(!req.body)return 
-//   const data:Data|undefined=await processData(req.body)
-const mad={
-  "name": "ზაზა",
-  "lastName": "ნოზაძე",
-  "email": "2",
-  "id": "2",
-  "matrix": {
-    "პროცესის საზღვრები": "2",
-    "პროცესების აღწერილობები": "2",
-    "თამანშრომლების ფუნქციები და როლები": "5",
-    "მომხმარებელზე ორიენტირებული ბიზნეს პროცესები": "2",
-    "პროცესების ინდიკატორები": "3",
-    "მმართველობის როლი": "5",
-    "გადაწყვეტილებების მიღების პრაქტიკები": "2",
-    "პროცესების გაუმჯობესების პრაქტიკები": "4",
-    "ინფორმაციული ტექნოლოგიები": "4"
-  }
-}
-
-
-// const gag:any=processData(data)
-//   chart(mad);
-//   emailSender(data).catch((e)=>console.log(e))
-// console.log(req.body)
-  res.send("Express + TypeScript Server")
+  // const gag:any=processData(data)
+  //   chart(mad);
+  //   emailSender(data).catch((e)=>console.log(e))
+  // console.log(req.body)
+  const response = await processData(data);
+  // res.send("Express + TypeScript Server");
+  res.send(response);
 });
 
 // const clicks:any=[]
 // console.log(clicks)
 // const dataClicked:any={id:'2',email:"zaza@zoz.com",company:'zoro'}
 
-app.get('/tracking', (req, res) => {
-  const { id, email,company} = req.query;
+app.get("/tracking", (req, res) => {
+  const { id, email, company } = req.query;
 
   function unixToJulian(unixTimestamp: number) {
     const julianDateStart = 2440587.5;
@@ -112,14 +139,18 @@ app.get('/tracking', (req, res) => {
     return julianDateStart + unixTimestamp / milisecndInDay;
   }
 
-const twoWeeksBackInMiliseconds = Date.now()
-const julianDate=unixToJulian(twoWeeksBackInMiliseconds)
-const clickedObject:any={"id":id,"Email":email,"company":company,"Completion time":julianDate}
- 
+  const twoWeeksBackInMiliseconds = Date.now();
+  const julianDate = unixToJulian(twoWeeksBackInMiliseconds);
+  const clickedObject: any = {
+    id: id,
+    Email: email,
+    company: company,
+    "Completion time": julianDate,
+  };
 
-  const clickedJson=JSON.stringify(clickedObject)
+  const clickedJson = JSON.stringify(clickedObject);
   // console.log(clickedJson)
-  saveNotClickedUser()
+  saveNotClickedUser();
   // saveClickedUsers(clickedObject)
   // saveAllUsers(data)
   // Record the click event with email
@@ -128,12 +159,8 @@ const clickedObject:any={"id":id,"Email":email,"company":company,"Completion tim
   // Redirect to the actual URL
   // const actualUrl = 'https://m.media-amazon.com/images/I/61zcSevCQ1L._AC_UF1000,1000_QL80_.jpg';
   // res.redirect(actualUrl);
-  res.end()
+  res.end();
 });
-
-
-
-
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);
