@@ -29,7 +29,7 @@ async function getAccessToken() {
   return token;
 }
 
-async function graphClient() {
+export async function graphClient() {
   const accessToken = await getAccessToken();
   const client = Client.init({
     authProvider: (done) => {
@@ -40,7 +40,8 @@ async function graphClient() {
   return client;
 }
 
-async function getUserId(userPrincipalName: string) {
+
+export async function getUserId(userPrincipalName: string) {
   const client = await graphClient();
   const user = await client.api(`/users/${userPrincipalName}`).get();
   return user.id;

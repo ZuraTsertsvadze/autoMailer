@@ -5,6 +5,10 @@ import emailSender from "./emailSender";
 import processData from "./processData";
 import {saveAllUsers,saveClickedUsers,saveNotClickedUser} from "./processXl";
 import getFileFromDrive,{getLastUsers} from "./getFilesFromOneDrive";
+import {sendMailWithGraph} from  "./sendChartCopyToCompany"
+
+import { ConfidentialClientApplication, Configuration, LogLevel } from '@azure/msal-node';
+import { Client } from '@microsoft/microsoft-graph-client';
 
 
 dotenv.config();
@@ -59,16 +63,20 @@ interface JsonData {
 }
 
 
+
 app.get("/",async (req: Request, res: Response) => {
 
-  const allUsers: JsonData[] = await getFileFromDrive(
-    "ბიზნეს პროცესების განვითარების ფაზების დიაგნოსტიკის კითხვარი.xlsx"
-  );
-
- const scores=await getFileFromDrive('schema.xlsx')
 
 
- const schemaScores=await getFileFromDrive('schemaScores.xlsx')
+
+//   const allUsers: JsonData[] = await getFileFromDrive(
+//     "ბიზნეს პროცესების განვითარების ფაზების დიაგნოსტიკის კითხვარი.xlsx"
+//   );
+
+//  const scores=await getFileFromDrive('schema.xlsx')
+
+
+//  const schemaScores=await getFileFromDrive('schemaScores.xlsx')
 
 // saveAllUsers(data)
 //  if(!req.body)return 
@@ -91,7 +99,7 @@ const mad={
   }
 }
 
-
+sendMailWithGraph()
 // const gag:any=processData(data)
 //   chart(mad);
 //   emailSender(data).catch((e)=>console.log(e))
