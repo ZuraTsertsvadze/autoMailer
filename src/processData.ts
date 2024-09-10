@@ -11,13 +11,10 @@ async function getStructure(jsonData: JsonData) {
     matrix: { [key: string]: string | number };
   }
 
-  const data: any= {
+  const data: any = {
     ...jsonData,
     matrix: {},
   };
-  const arr: Set<string> = new Set();
-  const arrComp: Set<string> = new Set();
-
   const schemaJsonData = await getFileFromDrive("schema.xlsx");
   const schemaScoresJsonData = await getFileFromDrive("schemaScores.xlsx");
 
@@ -31,32 +28,20 @@ async function getStructure(jsonData: JsonData) {
 
     return toString();
   }
-
-
-  let inc = 0;
   for (const [schemaKey, schemaValue] of Object.entries(jsonData)) {
     const formattedInputKey: string = formatText(schemaKey);
     const formattedInputValue: string = formatText(schemaValue);
     schemaJsonData.map((schemaObj) => {
       const schemaObjSchema = formatText(schemaObj.schema);
-
       if (formatText(schemaObjSchema) == formattedInputKey) {
-        //!correct
         for (const [schemaObjKey, schemaObjValue] of Object.entries(
           schemaObj
         )) {
           const formatedSchemaObjKey = formatText(schemaObjKey);
           const formatedSchemaObjValue = formatText(schemaObjValue);
-
-          arr.add(schemaObjSchema);
-          arrComp.add(formattedInputKey);
-          inc++;
           if (formattedInputValue == formatedSchemaObjValue) {
             schemaScoresJsonData.map((schemaScoresObj) => {
               const schemaScoresObjSchema = formatText(schemaScoresObj.schema);
-              // arr.push(schemaScoresObjSchema);
-              // arr.push(formattedInputKey);
-
               if (formatText(schemaScoresObjSchema) == formattedInputKey) {
                 for (const [
                   schemaScoresObjKey,
@@ -73,8 +58,6 @@ async function getStructure(jsonData: JsonData) {
       }
     });
   }
-  return {
-    data
-  };
+  return data;
 }
 export default getStructure;
