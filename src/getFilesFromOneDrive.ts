@@ -47,6 +47,42 @@ export async function getUserId(userPrincipalName: string) {
   return user.id;
 }
 
+
+export function jsonTrimer(json:JsonData[]){
+
+  const validated = json.map((scoreObj) => {
+    const trimedKeys = Object.keys(scoreObj).map((key) => {
+      const trimedKey = typeof key === "string" ? key.trim() : key;
+
+      return trimedKey;
+    });
+
+    const trimedValues = Object.values(scoreObj).map((value, index) => {
+      const trimedValue = typeof value === "string" ? value.trim() : value;
+
+      return trimedValue;
+    });
+
+    const keyValuePairArray = trimedKeys.map((key, index) => {
+       [key, trimedValues[index]]
+
+      return [key, trimedValues[index]];
+    });
+
+    return Object.fromEntries(keyValuePairArray);
+  });
+
+
+return validated
+
+}
+
+
+
+
+
+
+
 async function getFileFromDrive(filename: string) {
   const client = await graphClient();
   const userId = await getUserId("gogagoadze@gogagroup.onmicrosoft.com");
@@ -87,7 +123,7 @@ async function getFileFromDrive(filename: string) {
 
     const json: JsonData[] = xlsx.utils.sheet_to_json(worksheet);
 
-    return json;
+    return jsonTrimer(json);
   }
   return await fetchAndParseExcel();
 

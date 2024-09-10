@@ -21,8 +21,10 @@ interface Data {
 
 
 
-async function processData(jsonData: JsonData) {
+async function processData(jsonData: JsonData,schema:any,schemaScores:any) {
 
+
+  const userKeys=Object.keys(jsonData)
 
 
 
