@@ -144,7 +144,7 @@ export const getLastUsers = async () => {
   const worksheet = workbook.Sheets[sheetName];
 
   const allUsersServer: JsonData[] = xlsx.utils.sheet_to_json(worksheet);
-
+console.log(allUsersServer)
   const lastUsers = allUsers.map((user: JsonData) => {
     const lastIndexOfServerUsers = allUsersServer.length - 1;
     const lastElementOfServerUsers: JsonData =
