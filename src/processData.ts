@@ -11,11 +11,8 @@ async function getStructure(jsonData: JsonData) {
     matrix: { [key: string]: string | number };
   }
 
-  const data: Data = {
-    name: "",
-    lastName: "",
-    email: "",
-    id: 0,
+  const data: any= {
+    ...jsonData,
     matrix: {},
   };
   const arr: Set<string> = new Set();
@@ -35,14 +32,7 @@ async function getStructure(jsonData: JsonData) {
     return toString();
   }
 
-  data.id = jsonData["id"];
-  data.name = formatText(jsonData["თქვენი სახელი"]);
-  data.lastName = formatText(jsonData["თქვენი გვარი"]);
-  data.email = formatText(
-    jsonData[
-      "ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)"
-    ]
-  );
+
   let inc = 0;
   for (const [schemaKey, schemaValue] of Object.entries(jsonData)) {
     const formattedInputKey: string = formatText(schemaKey);
@@ -84,7 +74,7 @@ async function getStructure(jsonData: JsonData) {
     });
   }
   return {
-    data,
+    data
   };
 }
 export default getStructure;
