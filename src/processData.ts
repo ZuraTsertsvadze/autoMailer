@@ -19,6 +19,7 @@ async function getStructure(jsonData: JsonData) {
     matrix: {},
   };
   const arr: Set<string> = new Set();
+  const arrComp: Set<string> = new Set();
 
   const schemaJsonData = await getFileFromDrive("schema.xlsx");
   const schemaScoresJsonData = await getFileFromDrive("schemaScores.xlsx");
@@ -42,79 +43,48 @@ async function getStructure(jsonData: JsonData) {
       "ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)"
     ]
   );
-
-  // for (const [schemaKey, schemaValue] of Object.entries(jsonData)) {
-  //   const formattedInputKey: string = formatText(schemaKey);
-  //   const formattedInputValue: string = formatText(schemaValue);
-  //   arr.push(formattedInputKey);
-  //   schemaJsonData.map((schemaObj) => {
-  //     const schemaObjSchema = formatText(schemaObj.schema);
-
-  //     if (formatText(schemaObjSchema) == formattedInputKey) {
-  //       for (const [schemaObjKey, schemaObjValue] of Object.entries(
-  //         schemaObj
-  //       )) {
-  //         const formatedSchemaObjKey = formatText(schemaObjKey);
-  //         const formatedSchemaObjValue = formatText(schemaObjValue);
-  //         if (formattedInputValue == formatedSchemaObjValue) {
-  //           schemaScoresJsonData.map((schemaScoresObj) => {
-  //             const schemaScoresObjSchema = formatText(schemaScoresObj.schema);
-  //             // arr.push(schemaScoresObjSchema);
-  //             //!correct
-  //             // arr.push(formattedInputKey);
-  //             if (formatText(schemaScoresObjSchema) == formattedInputKey) {
-  //               for (const [
-  //                 schemaScoresObjKey,
-  //                 schemaScoresObjValue,
-  //               ] of Object.entries(schemaScoresObj)) {
-  //                 if (formatedSchemaObjKey == schemaScoresObjKey) {
-  //                   data.matrix[schemaScoresObjSchema] = schemaScoresObjValue;
-  //                 }
-  //               }
-  //             }
-  //           });
-  //         }
-  //       }
-  //     }
-  //   });
-  // }
+  let inc = 0;
   for (const [schemaKey, schemaValue] of Object.entries(jsonData)) {
     const formattedInputKey: string = formatText(schemaKey);
     const formattedInputValue: string = formatText(schemaValue);
-    arr.add(formattedInputKey); // Add to Set, ensures no duplicates
-
-    for (const schemaObj of schemaJsonData) {
+    schemaJsonData.map((schemaObj) => {
       const schemaObjSchema = formatText(schemaObj.schema);
 
-      if (schemaObjSchema === formattedInputKey) {
+      if (formatText(schemaObjSchema) == formattedInputKey) {
+        //!correct
         for (const [schemaObjKey, schemaObjValue] of Object.entries(
           schemaObj
         )) {
-          const formattedSchemaObjKey = formatText(schemaObjKey);
-          const formattedSchemaObjValue = formatText(schemaObjValue);
+          const formatedSchemaObjKey = formatText(schemaObjKey);
+          const formatedSchemaObjValue = formatText(schemaObjValue);
 
-          if (formattedInputValue === formattedSchemaObjValue) {
-            for (const schemaScoresObj of schemaScoresJsonData) {
+          arr.add(schemaObjSchema);
+          arrComp.add(formattedInputKey);
+          inc++;
+          if (formattedInputValue == formatedSchemaObjValue) {
+            schemaScoresJsonData.map((schemaScoresObj) => {
               const schemaScoresObjSchema = formatText(schemaScoresObj.schema);
+              // arr.push(schemaScoresObjSchema);
+              // arr.push(formattedInputKey);
 
-              if (schemaScoresObjSchema === formattedInputKey) {
+              if (formatText(schemaScoresObjSchema) == formattedInputKey) {
                 for (const [
                   schemaScoresObjKey,
                   schemaScoresObjValue,
                 ] of Object.entries(schemaScoresObj)) {
-                  if (formattedSchemaObjKey === schemaScoresObjKey) {
+                  if (formatedSchemaObjKey == schemaScoresObjKey) {
                     data.matrix[schemaScoresObjSchema] = schemaScoresObjValue;
-                    arr.add(schemaScoresObjSchema); // Add to Set only if it's a valid match
                   }
                 }
               }
-            }
+            });
           }
         }
       }
-    }
+    });
   }
-  const arrResult = Array.from(arr);
-  return { arrResult, schemaJsonData, schemaScoresJsonData, jsonData, data };
+  return {
+    data,
+  };
 }
 export default getStructure;
