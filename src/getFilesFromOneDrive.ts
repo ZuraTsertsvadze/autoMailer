@@ -40,16 +40,13 @@ export async function graphClient() {
   return client;
 }
 
-
 export async function getUserId(userPrincipalName: string) {
   const client = await graphClient();
   const user = await client.api(`/users/${userPrincipalName}`).get();
   return user.id;
 }
 
-
-export function jsonTrimer(json:JsonData[]){
-
+export function jsonTrimer(json: JsonData[]) {
   const validated = json.map((scoreObj) => {
     const trimedKeys = Object.keys(scoreObj).map((key) => {
       const trimedKey = typeof key === "string" ? key.trim() : key;
@@ -64,7 +61,7 @@ export function jsonTrimer(json:JsonData[]){
     });
 
     const keyValuePairArray = trimedKeys.map((key, index) => {
-       [key, trimedValues[index]]
+      [key, trimedValues[index]];
 
       return [key, trimedValues[index]];
     });
@@ -72,16 +69,8 @@ export function jsonTrimer(json:JsonData[]){
     return Object.fromEntries(keyValuePairArray);
   });
 
-
-return validated
-
+  return validated;
 }
-
-
-
-
-
-
 
 async function getFileFromDrive(filename: string) {
   const client = await graphClient();
@@ -126,7 +115,6 @@ async function getFileFromDrive(filename: string) {
     return jsonTrimer(json);
   }
   return await fetchAndParseExcel();
-
 }
 
 export const getLastUsers = async () => {
@@ -144,22 +132,19 @@ export const getLastUsers = async () => {
   const worksheet = workbook.Sheets[sheetName];
 
   const allUsersServer: JsonData[] = xlsx.utils.sheet_to_json(worksheet);
-console.log(allUsersServer)
-  const lastUsers = allUsers.map((user: JsonData) => {
+
+  const lastUsers = allUsers.flatMap((user: JsonData) => {
     const lastIndexOfServerUsers = allUsersServer.length - 1;
     const lastElementOfServerUsers: JsonData =
       allUsersServer[lastIndexOfServerUsers];
 
+    if (
+      user?.["Completion time"] > lastElementOfServerUsers?.["Completion time"]
+    ) {
+      return [user];
+    }
+    return [];
 
-      if (
-        user?.["Completion time"] > lastElementOfServerUsers?.["Completion time"]
- 
-      ) {
-        return user;
-      } else {
-        return;
-      }
-  
   });
 
   const emptyArray: [] = [];
@@ -174,7 +159,6 @@ console.log(allUsersServer)
   }
 
   return lastUsers;
-
 };
 
 export default getFileFromDrive;

@@ -2,11 +2,11 @@ import path from "path";
 import { graphClient, getUserId } from "./getFilesFromOneDrive";
 import fs from "fs";
 
-export async function sendMailWithGraph() {
+export async function graphApiEmailSender(email:string,name:string,type:string,directory:string) {
   const client = await graphClient();
   const userId = await getUserId("gogagoadze@gogagroup.onmicrosoft.com");
 
-  const filePath = path.resolve(__dirname, "../assets/chart.jpeg");
+  const filePath = path.resolve(__dirname, directory);
 
   const binary64FormatOfFile = fs.readFileSync(filePath,{ encoding: 'base64', flag: 'r' },);
 
@@ -21,24 +21,24 @@ export async function sendMailWithGraph() {
       toRecipients: [
         {
           emailAddress: {
-            address: "gogagoadze@gogagroup.onmicrosoft.com",
+            address: email,
           },
         },
       ],
       attachments: [
         {
           "@odata.type": "#microsoft.graph.fileAttachment",
-          name: "chart.jpeg",
-          contentType: "image/jpeg",
+          name:name, 
+          contentType: type,
           contentBytes: binary64FormatOfFile
         },
       ],
       
     },
-saveToSentItems: true
+  saveToSentItems: true
   };
  
-  // console.log(binary64FormatOfFile)
+ 
   const send = await client
     .api(`/users/${userId}/sendMail`)
     .select("id,name")
@@ -46,3 +46,5 @@ saveToSentItems: true
 
 
 }
+
+
