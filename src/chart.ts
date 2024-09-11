@@ -8,19 +8,18 @@ interface Data {
   name: string;
   lastName: string;
   email: string;
-  id: number | string;
-  matrix: { [key: string]: string };
+  company:string;
+  id: number ;
+  matrix: { [key: string]:number };
 }
 
 
 const chart=(data:Data|undefined)=>{
   if(!data)return
-console.log(data,'from chart')
+
 
 const dataKeys=Object.keys(data. matrix)
-const dataValues=Object.values(data. matrix).map((el)=>{
-  return parseInt(el)
-})
+const dataValues=Object.values(data. matrix)
 
 
 

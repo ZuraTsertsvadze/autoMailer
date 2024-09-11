@@ -18,17 +18,19 @@ interface Data {
   name: string;
   lastName: string;
   email: string;
-  id: number | string;
-  matrix: { [key: string]: string };
+  company:string;
+  id: number ;
+  matrix: { [key: string]: number };
 }
 
 const emailSender = async (data: Data | undefined) => {
   if (!data) return;
-  const { email, name, lastName, id } = data;
+  const { email, name, lastName, id,company } = data;
 
   const EmailContentHtml = `
 <h1>კომპანიის შეფასება </h1>
 <p>გამარჯობათ ბატონო ${name} აუდიტორული კომპანია შ.პ.ს "ჰერა" გიგზავნით თქვენი კომპანიის შეფასების შედეგებს</p>
+<a href='http://localhost:3000/tracking?id=${id}&email=${email}&company=${company}'>Book visit with us</a>
 `;
 
   const transporter = nodeMailer.createTransport(transportOptions);

@@ -1,6 +1,19 @@
 import xlsx from "xlsx";
 import path from "path";
 import fs from "fs";
+import { graphApiEmailSender } from "./graphApiEmailSender";
+import  moment from 'moment';
+import 'moment-msdate'
+
+
+
+
+declare module 'moment' {
+  interface Moment {
+      toOADate: () => number;
+  }
+}
+
 
 interface JsonData {
   [key: string]: string | number;
@@ -64,26 +77,29 @@ export const saveAllUsers = (data: any) => {
 export const saveClickedUsers = (data: any) => {
   fileChecker("../assets/clickedUsers.xlsx", "clickedUsers");
   const savedJson = xlsxToJson("../assets/clickedUsers.xlsx");
+
   saver(savedJson, "../assets/clickedUsers.xlsx", "clickedUsers", data);
 };
 
 export const saveNotClickedUser = () => {
-  function unixToJulian(unixTimestamp: number) {
-    const julianDateStart = 2440587.5;
-    const milisecndInDay = 86400000;
-    return julianDateStart + unixTimestamp / milisecndInDay;
-  }
 
   const allUsersServerJson = xlsxToJson("../assets/allUsersServer.xlsx");
-  const twoWeeksBackInMiliseconds = Date.now() - 1209600000;
+  
+
+  
+  const now = moment();
+
+
+  const excelTimeTwoWeeksBack = now.toOADate()-14;
+
 
   const usersOfTwoWeeksServer = allUsersServerJson.map((user) => {
-    // console.log( user?.["Completion time"] )
+ 
     if (
-      (user?.["Completion time"] as number) <=
-      unixToJulian(twoWeeksBackInMiliseconds)
+      (user?.["Completion time"] as number) >=
+      excelTimeTwoWeeksBack
     ) {
-      //shesacvleni metia
+ 
       return user;
     }
   });
@@ -91,24 +107,41 @@ export const saveNotClickedUser = () => {
   const clickedUsersJson = xlsxToJson("../assets/clickedUsers.xlsx");
 
   const usersOfTwoWeeksClicked = clickedUsersJson.map((user) => {
-    // console.log( user?.["Completion time"] )
     if (
       (user?.["Completion time"] as number) >=
-      unixToJulian(twoWeeksBackInMiliseconds)
+      excelTimeTwoWeeksBack
     ) {
-      // console.log(user?.["Completion time"],"fromClicked")
       return user;
     }
   });
 
-  const clickedUsers = usersOfTwoWeeksClicked.map((clickedUser) => clickedUser?.Email);
-  const notClickedUsers = usersOfTwoWeeksServer.flatMap((user) => {
-    if (!clickedUsers.includes(user?.Email)) {
-      return [user?.Email,user?.['კომპანიის დასახელება']];
-    }
+  const clickedUsers = usersOfTwoWeeksClicked.map(
+    (clickedUser) =>{  return clickedUser?.Email}
+  );
 
+ 
+
+  const notClickedUsers = usersOfTwoWeeksServer.flatMap((user) => {
+    const email=user?.["ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)"]
+    if (!clickedUsers.includes(email)) {
+      return {
+        Email: email,
+        CompanyName: user?.["კომპანიის დასახელება"],
+      };
+    }
     return [];
   });
 
-  console.log(notClickedUsers);
+
+  fileChecker("../assets/notClickedUsers.xlsx", "notClickedUsers");
+
+  saver([], "../assets/notClickedUsers.xlsx", "notClickedUsers", notClickedUsers);
+
+  graphApiEmailSender(
+    "gogagoadze@gogagroup.onmicrosoft.com",
+    "notClickedUsers.xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "../assets/notClickedUsers.xlsx"
+  );
+
 };

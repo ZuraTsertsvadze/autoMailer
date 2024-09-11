@@ -29,7 +29,7 @@ async function getAccessToken() {
   return token;
 }
 
-async function graphClient() {
+export async function graphClient() {
   const accessToken = await getAccessToken();
   const client = Client.init({
     authProvider: (done) => {
@@ -40,10 +40,36 @@ async function graphClient() {
   return client;
 }
 
-async function getUserId(userPrincipalName: string) {
+export async function getUserId(userPrincipalName: string) {
   const client = await graphClient();
   const user = await client.api(`/users/${userPrincipalName}`).get();
   return user.id;
+}
+
+export function jsonTrimer(json: JsonData[]) {
+  const validated = json.map((scoreObj) => {
+    const trimedKeys = Object.keys(scoreObj).map((key) => {
+      const trimedKey = typeof key === "string" ? key.trim() : key;
+
+      return trimedKey;
+    });
+
+    const trimedValues = Object.values(scoreObj).map((value, index) => {
+      const trimedValue = typeof value === "string" ? value.trim() : value;
+
+      return trimedValue;
+    });
+
+    const keyValuePairArray = trimedKeys.map((key, index) => {
+      [key, trimedValues[index]];
+
+      return [key, trimedValues[index]];
+    });
+
+    return Object.fromEntries(keyValuePairArray);
+  });
+
+  return validated;
 }
 
 async function getFileFromDrive(filename: string) {
@@ -86,10 +112,9 @@ async function getFileFromDrive(filename: string) {
 
     const json: JsonData[] = xlsx.utils.sheet_to_json(worksheet);
 
-    return json;
+    return jsonTrimer(json);
   }
   return await fetchAndParseExcel();
-
 }
 
 export const getLastUsers = async () => {
@@ -108,21 +133,18 @@ export const getLastUsers = async () => {
 
   const allUsersServer: JsonData[] = xlsx.utils.sheet_to_json(worksheet);
 
-  const lastUsers = allUsers.map((user: JsonData) => {
+  const lastUsers = allUsers.flatMap((user: JsonData) => {
     const lastIndexOfServerUsers = allUsersServer.length - 1;
     const lastElementOfServerUsers: JsonData =
       allUsersServer[lastIndexOfServerUsers];
 
+    if (
+      user?.["Completion time"] > lastElementOfServerUsers?.["Completion time"]
+    ) {
+      return [user];
+    }
+    return [];
 
-      if (
-        user?.["Completion time"] > lastElementOfServerUsers?.["Completion time"]
- 
-      ) {
-        return user;
-      } else {
-        return;
-      }
-  
   });
 
   const emptyArray: [] = [];
@@ -137,7 +159,6 @@ export const getLastUsers = async () => {
   }
 
   return lastUsers;
-
 };
 
 export default getFileFromDrive;
