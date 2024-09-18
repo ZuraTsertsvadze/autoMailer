@@ -2,18 +2,15 @@ import xlsx from "xlsx";
 import path from "path";
 import fs from "fs";
 import { graphApiEmailSender } from "./graphApiEmailSender";
-import  moment from 'moment';
-import 'moment-msdate'
+import moment from "moment";
+import "moment-msdate";
+import { name } from "@azure/msal-node/dist/packageMetadata";
 
-
-
-
-declare module 'moment' {
+declare module "moment" {
   interface Moment {
-      toOADate: () => number;
+    toOADate: () => number;
   }
 }
-
 
 interface JsonData {
   [key: string]: string | number;
@@ -82,24 +79,14 @@ export const saveClickedUsers = (data: any) => {
 };
 
 export const saveNotClickedUser = () => {
-
   const allUsersServerJson = xlsxToJson("../assets/allUsersServer.xlsx");
-  
 
-  
   const now = moment();
 
-
-  const excelTimeTwoWeeksBack = now.toOADate()-14;
-
+  const excelTimeTwoWeeksBack = now.toOADate() - 14;
 
   const usersOfTwoWeeksServer = allUsersServerJson.map((user) => {
- 
-    if (
-      (user?.["Completion time"] as number) >=
-      excelTimeTwoWeeksBack
-    ) {
- 
+    if ((user?.["Completion time"] as number) >= excelTimeTwoWeeksBack) {
       return user;
     }
   });
@@ -107,41 +94,61 @@ export const saveNotClickedUser = () => {
   const clickedUsersJson = xlsxToJson("../assets/clickedUsers.xlsx");
 
   const usersOfTwoWeeksClicked = clickedUsersJson.map((user) => {
-    if (
-      (user?.["Completion time"] as number) >=
-      excelTimeTwoWeeksBack
-    ) {
+    if ((user?.["Completion time"] as number) >= excelTimeTwoWeeksBack) {
       return user;
     }
   });
 
-  const clickedUsers = usersOfTwoWeeksClicked.map(
-    (clickedUser) =>{  return clickedUser?.Email}
-  );
-
- 
+  const clickedUsers = usersOfTwoWeeksClicked.map((clickedUser) => {
+    return clickedUser?.Email;
+  });
 
   const notClickedUsers = usersOfTwoWeeksServer.flatMap((user) => {
-    const email=user?.["ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)"]
+    const email =
+      user?.[
+        "ელექტრონული ფოსტა (აუცილებელია მიუთითოთ ვალიდური სამსახურებრივი ელ-ფოსტის მისამართი, წინააღმდეგ შემთხვევაში კვლევის მოკლე ანგარიში ვერ გამოგეგზავნებათ)"
+      ];
     if (!clickedUsers.includes(email)) {
       return {
-        Email: email,
-        CompanyName: user?.["კომპანიის დასახელება"],
+        email: email,
+        company: user?.["კომპანიის დასახელება"],
+        name: user?.["თქვენი სახელი"],
+        lastName: user?.["თქვენი გვარი"],
+        id: user?.Id,
       };
     }
     return [];
   });
 
-
   fileChecker("../assets/notClickedUsers.xlsx", "notClickedUsers");
 
-  saver([], "../assets/notClickedUsers.xlsx", "notClickedUsers", notClickedUsers);
+  saver(
+    [],
+    "../assets/notClickedUsers.xlsx",
+    "notClickedUsers",
+    notClickedUsers
+  );
+
+  const today = new Date();
+
+  const formattedDate = today.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+  });
+
+  const data = {
+    email: "gogagoadze@outlook.com",
+    company: "",
+    name: "notclickeduser",
+    lastName: `${formattedDate}`,
+    id: "",
+  };
 
   graphApiEmailSender(
     "gogagoadze@gogagroup.onmicrosoft.com",
     "notClickedUsers.xlsx",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "../assets/notClickedUsers.xlsx"
+    "../assets/notClickedUsers.xlsx",
+    data
   );
-
 };

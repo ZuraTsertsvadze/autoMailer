@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import chart from "./chart";
 import emailSender from "./emailSender";
 import { saveClickedUsers, saveNotClickedUser } from "./processXl";
-import { getLastUsers } from "./getFilesFromOneDrive";
+import { getLastUsers, getFileFromDrive } from "./getFilesFromOneDrive";
 import { graphApiEmailSender } from "./graphApiEmailSender";
 
 import moment from "moment";
@@ -16,6 +16,7 @@ declare module "moment" {
 }
 
 import getStructure from "./processData";
+
 dotenv.config();
 
 const app: Express = express();
@@ -27,21 +28,26 @@ interface JsonData {
 }
 
 app.get("/", async (req: Request, res: Response) => {
-  const lastUsers: JsonData[] = await getLastUsers();
+  const lastUsers: JsonData[] | void = await getLastUsers().catch((error) =>
+    console.log(error)
+  );
 
   if (!lastUsers) return;
 
   lastUsers.forEach(async (user) => {
     if (!user) return;
-    const scores = await getStructure(user);
+    const scores = await getStructure(user).catch((error) =>
+      console.log(error)
+    );
     chart(scores);
-    emailSender(scores);
+    emailSender(scores).catch((error) => console.log(error));
     graphApiEmailSender(
       "gogagoadze@gogagroup.onmicrosoft.com",
       "chart.jpeg",
       "image/jpeg",
-      "../assets/chart.jpeg"
-    );
+      "../assets/chart.jpeg",
+      scores
+    ).catch((error) => console.log(error));
   });
 
   res.send();

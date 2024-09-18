@@ -2,49 +2,56 @@ import path from "path";
 import { graphClient, getUserId } from "./getFilesFromOneDrive";
 import fs from "fs";
 
-export async function graphApiEmailSender(email:string,name:string,type:string,directory:string) {
+export async function graphApiEmailSender(
+  companyEmail: string,
+  fileName: string,
+  type: string,
+  directory: string,
+  data: any
+) {
+  if (!data) return;
+  const { email, name, lastName, company } = data;
   const client = await graphClient();
-  const userId = await getUserId("gogagoadze@gogagroup.onmicrosoft.com");
+  const userId = await getUserId("gogagoadze@gogagroup.onmicrosoft.com").catch(
+    (error) => console.log(error)
+  );
 
   const filePath = path.resolve(__dirname, directory);
 
-  const binary64FormatOfFile = fs.readFileSync(filePath,{ encoding: 'base64', flag: 'r' },);
-
+  const binary64FormatOfFile = fs.readFileSync(filePath, {
+    encoding: "base64",
+    flag: "r",
+  });
 
   const emailBody = {
     message: {
-      subject: "ae  ari ari ari?",
+      subject: `${email}  ${name} ${lastName}  ${company}`,
       body: {
         contentType: "Text",
-        content: "The new cafeteria is open.",
+        content: `${email}  ${name} ${lastName}  ${company}`,
       },
       toRecipients: [
         {
           emailAddress: {
-            address: email,
+            address: companyEmail,
           },
         },
       ],
       attachments: [
         {
           "@odata.type": "#microsoft.graph.fileAttachment",
-          name:name, 
+          name: fileName,
           contentType: type,
-          contentBytes: binary64FormatOfFile
+          contentBytes: binary64FormatOfFile,
         },
       ],
-      
     },
-  saveToSentItems: true
+    saveToSentItems: true,
   };
- 
- 
+
   const send = await client
     .api(`/users/${userId}/sendMail`)
     .select("id,name")
-    .post(emailBody);
-
-
+    .post(emailBody)
+    .catch((error) => console.log(error));
 }
-
-

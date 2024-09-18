@@ -72,7 +72,7 @@ export function jsonTrimer(json: JsonData[]) {
   return validated;
 }
 
-async function getFileFromDrive(filename: string) {
+export async function getFileFromDrive(filename: string) {
   const client = await graphClient();
   const userId = await getUserId("gogagoadze@gogagroup.onmicrosoft.com");
 
@@ -144,7 +144,6 @@ export const getLastUsers = async () => {
       return [user];
     }
     return [];
-
   });
 
   const emptyArray: [] = [];

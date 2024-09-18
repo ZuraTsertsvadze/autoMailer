@@ -1,3 +1,4 @@
+import { error } from "console";
 import nodeMailer from "nodemailer";
 import path from "path";
 
@@ -10,7 +11,7 @@ const transportOptions = {
     pass: "llpsgqgmzksfzzvx",
   },
   tls: {
-    rejectUnauthorized: false // Optional, for self-signed certificates
+    rejectUnauthorized: false, // Optional, for self-signed certificates
   },
 };
 
@@ -18,19 +19,61 @@ interface Data {
   name: string;
   lastName: string;
   email: string;
-  company:string;
-  id: number ;
+  company: string;
+  id: number;
   matrix: { [key: string]: number };
+  averigeOfFive: number;
+  averigeFromFiveToLast: number;
+  reversedFour: number;
+  reversedTen: number;
 }
 
-const emailSender = async (data: Data | undefined) => {
+const emailSender = async (data: Data | undefined | void) => {
   if (!data) return;
-  const { email, name, lastName, id,company } = data;
+  const {
+    email,
+    name,
+    lastName,
+    id,
+    company,
+    averigeOfFive,
+    averigeFromFiveToLast,
+    reversedFour,
+    reversedTen,
+  } = data;
+
+  const matrixAverige =
+    Object.entries(data.matrix)
+      .map((matrixElement, index) => matrixElement[1])
+      .reduce((acc, current) => acc + current, 0) /
+    Object.entries(data.matrix).length;
+  const matrixAverageFormatted = !Number.isInteger(matrixAverige)
+    ? matrixAverige.toFixed(1)
+    : matrixAverige;
+  const averageOfFiveFormatted = !Number.isInteger(averigeOfFive)
+    ? averigeOfFive.toFixed(1)
+    : averigeOfFive;
+  const averigeFromFiveToLastFormatted = !Number.isInteger(
+    averigeFromFiveToLast
+  )
+    ? averigeFromFiveToLast.toFixed(1)
+    : averigeFromFiveToLast;
 
   const EmailContentHtml = `
-<h1>კომპანიის შეფასება </h1>
-<p>გამარჯობათ ბატონო ${name} აუდიტორული კომპანია შ.პ.ს "ჰერა" გიგზავნით თქვენი კომპანიის შეფასების შედეგებს</p>
-<a href='http://localhost:3000/tracking?id=${id}&email=${email}&company=${company}'>Book visit with us</a>
+<img alt="companyLogo" src="cid:unique@companyLogo.png" width="400px">
+<h1 style="margin-top: 20px">მოგესალმებით ${name},</h1>
+<div style="margin-top: 10px">დიდი მადლობა დაინტერესებისთვისა და მონაწილეობისთვის.</div>
+<div style="margin-top: 10px">გიგზავნით თქვენს შედეგებს და მათი განმარტების მოკლე აღწერას თანდართულ ფაულად.</div>
+<div style="margin-top: 10px">ბიზნეს პროცესების მართვის საშუალო დონე:  ${matrixAverageFormatted}</div>
+<div style="margin-top: 10px">კომპანაში არსებული შიდა კომუნიკაციის საშუალო დონე:  ${averageOfFiveFormatted}</div>
+<div style="margin-top: 10px">კომპანიაში არსებული სტარუტურულ ურთიერთობებს შორის კონფლიქტის საშუალო დონე:  ${averigeFromFiveToLastFormatted}</div>
+<img alt="chartImage" src="cid:unique@chart.jpeg" style="margin-top: 10px">
+<div style="margin-top: 20px">შედეგების დამატებითად განხილვის სურვილის შემთხვევაში, მოხარული ვიქნებით ჩანიშნოთ 
+30-წუთიანი ონლაინ შეხვედრა<br> ჩვენს გუნდთან თქვენთვის ხელსაყრელ დროს. 
+შეხვედრის ჩანიშვნა შეგიძლია მოცემული  ლინკით: <a href='http://localhost:3000/tracking?id=${id}&email=${email}&company=${company}'>ლინკი</a></div>
+<div style="margin-top: 10px">გისურვებთ წარმატებას.</div>
+<div  style="margin-top: 10px">გიორგი სიმონგულაშვილი</div>
+<div>GEC-ის ბიზნეს განვითარების გუნდი</div>
 `;
 
   const transporter = nodeMailer.createTransport(transportOptions);
@@ -44,10 +87,16 @@ const emailSender = async (data: Data | undefined) => {
       {
         filename: "chart.jpeg",
         path: path.join(__dirname, "../assets/chart.jpeg"),
+        cid: "unique@chart.jpeg",
       },
       {
         filename: "GEC PRESENTATION.pdf",
         path: path.join(__dirname, "../assets/GEC PRESENTATION.pdf"),
+      },
+      {
+        filename: "companyLogo.png",
+        path: path.join(__dirname, "../assets/companyLogo.png"),
+        cid: "unique@companyLogo.png",
       },
     ],
   });
